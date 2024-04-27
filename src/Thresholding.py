@@ -114,7 +114,7 @@ class Thresholding:
         return thresholded_image
 
 
-    def otsu_threshold(self):
+    def otsu_threshold_global(self):
         """
         Applies Otsu's thresholding algorithm to find the optimal threshold.
 
@@ -141,8 +141,69 @@ class Thresholding:
 
         thresholded_image = np.where(self.image >= self.image.min() + optimal_threshold, 255, 0).astype(np.uint8)
     
-        return optimal_threshold , thresholded_image
+        return  thresholded_image
+    
 
+    def apply_otsu_on_region(self, img):
+        """
+        Applies Otsu's thresholding algorithm to find the optimal threshold.
+
+        Args:
+            self.image (np.ndarray): Input grayscale image.
+
+        Returns:
+            int: The optimal threshold value.
+        """
+        thresholds = []
+        for t in range(img.min() + 1, img.max()):
+            below_threshold = img[img < t]
+            above_threshold = img[img >= t]
+            Wb = len(below_threshold) / (img.shape[0] * img.shape[1])
+            Wa = len(above_threshold) / (img.shape[0] * img.shape[1])
+            var_b = np.var(below_threshold)
+            var_a = np.var(above_threshold)
+            thresholds.append(Wb * var_b + var_a * Wa)
+        try:
+            min_threshold = min(thresholds)
+            optimal_threshold = thresholds.index(min_threshold)
+        except ValueError:
+            optimal_threshold = 0
+
+        thresholded_image = np.where(img >= img.min() + optimal_threshold, 255, 0).astype(np.uint8)
+    
+        return optimal_threshold , thresholded_image
+    
+    def otsu_threshold_local(self, n_regions=4):
+        """
+        Applies Otsu's thresholding algorithm to find the optimal threshold.
+
+        Args:
+            self.image (np.ndarray): Input grayscale image.
+
+        Returns:
+            int: The optimal threshold value.
+        """
+
+        # devide the image into n_regions of equal images
+        imgs_slices = []
+        for i in range(n_regions):
+            start_row = (self.image.shape[0] // n_regions) * i
+            end_row = (self.image.shape[0] // n_regions) * (i + 1)
+            region = self.image[start_row:end_row, :]
+            imgs_slices.append(region)
+        
+        for idx, img_slice in enumerate(imgs_slices):
+            _, thresholded_image = self.apply_otsu_on_region(img_slice)
+            imgs_slices[idx] = thresholded_image
+        
+        imgs_slices = np.asarray(imgs_slices)
+
+        return imgs_slices.reshape(self.image.shape)
+
+        
+
+        
+        
     def spectral_threshold_global(self):
         gray_image = cv2.cvtColor(self.image.copy(), cv2.COLOR_BGR2GRAY)
 
@@ -185,6 +246,24 @@ class Thresholding:
                     local_image[i, j] = 255
 
         return local_image
+
+
+
+img = cv2.imread("images/cameraman.png")
+img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+img = cv2.resize(img, (256, 256))
+thres = Thresholding(img)
+_,im = thres.otsu_threshold_global()
+
+# Display the thresholded image using cv2.imshow()
+cv2.imshow('Thresholded Image', im)
+cv2.waitKey(0)
+
+im = thres.otsu_threshold_local()
+
+# Display the thresholded image using cv2.imshow()
+cv2.imshow('Thresholded local Image', im)
+cv2.waitKey(0)
 
 
 
