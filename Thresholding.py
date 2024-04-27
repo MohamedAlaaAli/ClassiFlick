@@ -83,21 +83,37 @@ class Thresholding:
     def spectral_threshold(self):
         pass
 
+    def local_thresholding(self, block_size: tuple = (3, 3), a: int = 13, b: float = .9):
+        gray_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        shape = gray_image.shape
+        step_in_x, step_in_y = block_size[0], block_size[1]
+        mean_value_of_image = np.mean(gray_image)
+        new_image = np.zeros_like(gray_image)
+        for r in range(0, shape[0] - step_in_x, step_in_x):
+            for c in range(0, shape[1] - step_in_y, step_in_y):
+                window = gray_image[r:r + step_in_x, c:c + step_in_y]
+                std_of_window = np.std(window)
+                new_image[r:r + step_in_x, c:c + step_in_y] = np.where(
+                    (window > a * std_of_window) & (window > b * mean_value_of_image), 255, 0)
+
+        return new_image.astype(np.uint8)
 
 def main():
     # Example usage:
     # Read the input image
-    image = cv2.imread('images\Screenshot 2024-04-21 232347.png')
+    image = cv2.imread('image.7YXGM2.png')
 
     # Create an instance of the Thresholding class
     thresholding = Thresholding(image)
 
     # Calculate the optimal threshold and get the thresholded image
-    optimal_t, thresholded_image = thresholding.optimal_threshold(initial_threshold=10)
-    print("Optimal threshold:", optimal_t)
+    # optimal_t, thresholded_image = thresholding.optimal_threshold(initial_threshold=10)
+    # print("Optimal threshold:", optimal_t)
+
+    new = thresholding.local_thresholding()
 
     # Display the thresholded image
-    cv2.imshow(f'Thresholded Image with value{optimal_t}', thresholded_image)
+    cv2.imshow(f'Thresholded Image with value', new)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
