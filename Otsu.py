@@ -37,7 +37,7 @@ def apply_otso(img):
     Returns:
         np.ndarray: The thresholded image.
     """
-    if img.ndim != 2:
+    if img.ndim != 1:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
     threshold = otsu(img)
