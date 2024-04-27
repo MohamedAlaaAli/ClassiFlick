@@ -64,7 +64,7 @@ def plot_rgb_luv_comparison(rgb_image):
 
     plt.show()
     
-
+#TODO LINK THIS
 def convert(pth):
     img = load_img(pth)
     luv_image = rgb_to_luv(img)
