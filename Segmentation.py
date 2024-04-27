@@ -18,6 +18,7 @@
 import numpy as np
 import cv2
 from concurrent.futures import ThreadPoolExecutor
+from collections import deque
 
 def calculate_distance(cluster1, cluster2):
     # Calculate the Euclidean distance between two clusters in Luv color space
@@ -92,15 +93,71 @@ def agglomerative_segmentation(image, num_clusters, num_threads=4):
 
     return segmented_image_bgr
 
+def region_growing(image, seeds, threshold, window_size):
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    visited = np.zeros_like(gray_image, dtype=bool)
+
+    segmented = np.zeros_like(image)
+    half_window = window_size // 2
+
+    for seed in seeds:
+        x_seed, y_seed = seed[0], seed[1]
+        if 0 <= x_seed < gray_image.shape[0] and 0 <= y_seed < gray_image.shape[1]:
+            mean_value = gray_image[x_seed, y_seed]
+            number_of_pixels_in_region = 1  # Initialize to 1 for the seed pixel
+            queue = deque([(x_seed, y_seed)])
+
+            while len(queue):
+                current_x, current_y = queue.popleft()
+                if (0 <= current_x < gray_image.shape[0] and 0 <= current_y < gray_image.shape[1]) and not visited[current_x, current_y]:
+                    visited[current_x, current_y] = True
+
+                    if abs(gray_image[current_x, current_y] - mean_value) < threshold:
+                        # Update mean value
+                        mean_value = ((mean_value * number_of_pixels_in_region + gray_image[current_x, current_y]) /
+                                      (number_of_pixels_in_region + 1))
+                        number_of_pixels_in_region += 1
+
+                        # Mark the pixel as part of the region
+                        segmented[current_x, current_y] = image[current_x, current_y]
+
+                        # Add neighboring pixels to the queue
+                        for x in range(- half_window, half_window + 1):
+                            for y in range(- half_window, half_window + 1):
+                                if 0 <= current_x + x < gray_image.shape[0] and 0 <= current_y + y < gray_image.shape[1]:
+                                    queue.append((current_x + x, current_y + y))
+
+    visualize_regions(image, segmented)
+
+
+
+def visualize_regions(image, segmented_image):
+    contours, _ = cv2.findContours(
+        cv2.cvtColor(segmented_image, cv2.COLOR_RGB2GRAY),
+        cv2.RETR_EXTERNAL,
+        cv2.CHAIN_APPROX_SIMPLE,
+    )
+
+    # Draw contours on input image
+    output_image = image.copy()
+    cv2.drawContours(output_image, contours, -1, (255, 0, 0), 2)
+
+    # Display the output image
+    cv2.imshow('Segmented Image', output_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
 # Load the image
-image = cv2.imread('images\Screenshot 2024-04-21 232935.png')
-
+image = cv2.imread('Brain2.pgm')
+region_growing(image, [(500, 400)], 50, 3)
 # Perform agglomerative segmentation with multithreading
-num_clusters = 5
-segmented_image = agglomerative_segmentation(image, num_clusters)
-
-# Display original and segmented images
-cv2.imshow('Original Image', image)
-cv2.imshow('Segmented Image', segmented_image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# num_clusters = 5
+# segmented_image = agglomerative_segmentation(image, num_clusters)
+#
+# # Display original and segmented images
+# cv2.imshow('Original Image', image)
+# cv2.imshow('Segmented Image', segmented_image)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
