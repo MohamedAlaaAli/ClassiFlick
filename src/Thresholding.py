@@ -114,6 +114,7 @@ class Thresholding:
         return thresholded_image
 
 
+    #TODO:LINK THIS FOR GLOBAL THRESHOLDING OTSU
     def otsu_threshold_global(self):
         """
         Applies Otsu's thresholding algorithm to find the optimal threshold.
@@ -173,6 +174,7 @@ class Thresholding:
     
         return optimal_threshold , thresholded_image
     
+    #TODO: LINK THIS FOR LOCAL THRESHOLD OTSU
     def otsu_threshold_local(self, n_regions=4):
         """
         Applies Otsu's thresholding algorithm to find the optimal threshold.
@@ -199,8 +201,6 @@ class Thresholding:
         imgs_slices = np.asarray(imgs_slices)
 
         return imgs_slices.reshape(self.image.shape)
-
-        
 
         
         
