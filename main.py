@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QVBoxLayout, QFileDialog, QMessageBox
 from PyQt6.QtGui import QIcon
 import sys
 from src.imageViewPort import ImageViewport
+from sklearn.cluster import AgglomerativeClustering
 from src.Segmentation import Agglomerative_Clustering , KMeans, MeanShiftSegmentation, RegionGrowing
 from src.Thresholding import *
 
@@ -201,6 +202,31 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def apply_clustering(self):
         pass
+
+
+    def apply_agglomeration(self, n_clusters = 3):
+        # Step 1: Read the image 
+        image = self.out_ports[1].original_img
+
+        # Step 2: Convert color space from BGR to LUV
+        image_luv = cv2.cvtColor(image, cv2.COLOR_BGR2LUV)
+
+        # Downsample the image to reduce memory usage 
+        downsample_factor = 0.4  
+        image_luv = image_luv[::int(1/downsample_factor), ::int(1/downsample_factor), :]
+
+        # Step 3: Reshape the image into a feature matrix
+        w, h, d = original_shape = tuple(image_luv.shape)
+        assert d == 3
+        image_array = np.reshape(image_luv, (w * h, d))
+
+        # Step 4: Apply Agglomerative Clustering
+        clustering = AgglomerativeClustering(n_clusters=n_clusters).fit(image_array)
+
+        # Step 5: Reshape the cluster labels to match the original image shape
+        labels = clustering.labels_.reshape(w, h)
+
+        return labels
 
 
     def show_error_message(self, message):
