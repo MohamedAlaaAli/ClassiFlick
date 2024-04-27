@@ -418,7 +418,7 @@ class RegionGrowing:
 
 
 #TODO: link here 
-def kmeans_segment_(image, K=5, max_iters=100, save_path='segmented_image.png'):
+def kmeans_segment_(image, k=5, max_iters=100, save_path='segmented_image.png'):
     """
     Segments an image using K-means clustering on the pixel values.
 
@@ -437,7 +437,7 @@ def kmeans_segment_(image, K=5, max_iters=100, save_path='segmented_image.png'):
     pixel_values = np.float32(pixel_values)
     
     # Clustering
-    kmeans = KMeans(K=K, max_iters=max_iters)
+    kmeans = KMeans(K=k, max_iters=max_iters)
     labels = kmeans.predict(pixel_values)
     
     # Reshape labels and convert to int type
@@ -446,7 +446,7 @@ def kmeans_segment_(image, K=5, max_iters=100, save_path='segmented_image.png'):
     
     # Map clusters to original image colors (average color of the cluster)
     masked_image = np.zeros(image.shape, dtype=np.uint8)
-    for i in range(K):
+    for i in range(k):
         masked_image[segmented_image == i] = kmeans.centroids[i]
 
     # Convert back to uint8 and save
@@ -455,42 +455,46 @@ def kmeans_segment_(image, K=5, max_iters=100, save_path='segmented_image.png'):
     
     return masked_image
 
-def main():
+# def main():
 
-    X,y = make_classification(100,n_features=2,n_redundant=0)
-    print(X.shape)
+#     X,y = make_classification(100,n_features=2,n_redundant=0)
+#     print(X.shape)
 
-    clusters = Agglomerative_Clustering(linkage_type='complete')
-    Z = clusters.fit(X)
-    Labels = clusters.predict(num_cluster=3)
+#     clusters = Agglomerative_Clustering(linkage_type='complete')
+#     Z = clusters.fit(X)
+#     Labels = clusters.predict(num_cluster=3)
 
-    clustering = AgglomerativeClustering(n_clusters=3,linkage='complete').fit(X)
-    skLabel = clustering.labels_
+#     clustering = AgglomerativeClustering(n_clusters=3,linkage='complete').fit(X)
+#     skLabel = clustering.labels_
 
-    fig, ax = plt.subplots(2,2,facecolor='white',figsize=(15,5*2),dpi=120)
+#     fig, ax = plt.subplots(2,2,facecolor='white',figsize=(15,5*2),dpi=120)
 
-    # Cluster
-    for i in range(3):
-        myIndices = Labels==i
-        skIndices = skLabel==i
-        ax[0,0].scatter(x=X[myIndices,0], y=X[myIndices,1],label=i)
-        ax[0,1].scatter(x=X[skIndices,0], y=X[skIndices,1],label=i)
+#     # Cluster
+#     for i in range(3):
+#         myIndices = Labels==i
+#         skIndices = skLabel==i
+#         ax[0,0].scatter(x=X[myIndices,0], y=X[myIndices,1],label=i)
+#         ax[0,1].scatter(x=X[skIndices,0], y=X[skIndices,1],label=i)
         
-    ax[0,0].set_title('Custom | Cluster')
-    ax[0,1].set_title('Sklearn | Cluster')
-    ax[0,0].legend()
-    ax[0,1].legend()
+#     ax[0,0].set_title('Custom | Cluster')
+#     ax[0,1].set_title('Sklearn | Cluster')
+#     ax[0,0].legend()
+#     ax[0,1].legend()
 
-    # Dendrogram
-    z = hierarchy.linkage(X, 'complete') # scipy agglomerative cluster
-    hierarchy.dendrogram(Z, ax=ax[1,0]) # plotting mine with their function
-    hierarchy.dendrogram(z, ax=ax[1,1]) # plotting their with their function
+#     # Dendrogram
+#     z = hierarchy.linkage(X, 'complete') # scipy agglomerative cluster
+#     hierarchy.dendrogram(Z, ax=ax[1,0]) # plotting mine with their function
+#     hierarchy.dendrogram(z, ax=ax[1,1]) # plotting their with their function
 
-    ax[1,0].set_title('Custom | Dendrogram')
-    ax[1,1].set_title('Sklearn | Dendrogram')
-    plt.show()
+#     ax[1,0].set_title('Custom | Dendrogram')
+#     ax[1,1].set_title('Sklearn | Dendrogram')
+#     plt.show()
 
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
+img = cv2.imread("images/shore.jpg")
+im = kmeans_segment_(img, k=2)
+plt.imshow(im)
+plt.show()
