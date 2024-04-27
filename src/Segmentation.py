@@ -417,6 +417,44 @@ class RegionGrowing:
         return segmented_img
 
 
+#TODO: link here 
+def kmeans_segment_(image, K=5, max_iters=100, save_path='segmented_image.png'):
+    """
+    Segments an image using K-means clustering on the pixel values.
+
+    Args:
+        image: input image.
+        K (int): Number of desired clusters.
+        max_iters (int): Maximum number of iterations for the K-means algorithm.
+        save_path (str): Path where the segmented image will be saved.
+
+    Returns:
+        np.ndarray: An array representing the segmented image.
+    """
+
+    # Flatten image
+    pixel_values = image.reshape((-1, 3))
+    pixel_values = np.float32(pixel_values)
+    
+    # Clustering
+    kmeans = KMeans(K=K, max_iters=max_iters)
+    labels = kmeans.predict(pixel_values)
+    
+    # Reshape labels and convert to int type
+    labels = labels.astype(int)
+    segmented_image = labels.reshape(image.shape[:-1])
+    
+    # Map clusters to original image colors (average color of the cluster)
+    masked_image = np.zeros(image.shape, dtype=np.uint8)
+    for i in range(K):
+        masked_image[segmented_image == i] = kmeans.centroids[i]
+
+    # Convert back to uint8 and save
+    masked_image = np.uint8(masked_image)
+    plt.imsave(save_path, masked_image)
+    
+    return masked_image
+
 def main():
 
     X,y = make_classification(100,n_features=2,n_redundant=0)
