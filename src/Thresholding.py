@@ -249,21 +249,21 @@ class Thresholding:
 
 
 
-img = cv2.imread("images/cameraman.png")
-img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-img = cv2.resize(img, (256, 256))
-thres = Thresholding(img)
-_,im = thres.otsu_threshold_global()
+# img = cv2.imread("images/cameraman.png")
+# img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# img = cv2.resize(img, (256, 256))
+# thres = Thresholding(img)
+# im = thres.otsu_threshold_global()
 
-# Display the thresholded image using cv2.imshow()
-cv2.imshow('Thresholded Image', im)
-cv2.waitKey(0)
+# # Display the thresholded image using cv2.imshow()
+# cv2.imshow('Thresholded Image', im)
+# cv2.waitKey(0)
 
-im = thres.otsu_threshold_local()
+# im = thres.otsu_threshold_local()
 
-# Display the thresholded image using cv2.imshow()
-cv2.imshow('Thresholded local Image', im)
-cv2.waitKey(0)
+# # Display the thresholded image using cv2.imshow()
+# cv2.imshow('Thresholded local Image', im)
+# cv2.waitKey(0)
 
 
 

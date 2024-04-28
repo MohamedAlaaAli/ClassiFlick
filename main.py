@@ -2,10 +2,12 @@ from PyQt6 import QtWidgets, uic
 from PyQt6.QtWidgets import QVBoxLayout, QFileDialog, QMessageBox
 from PyQt6.QtGui import QIcon
 import sys
+import cv2
+import numpy as np
 from src.imageViewPort import ImageViewport
 from sklearn.cluster import AgglomerativeClustering
 from src.Segmentation import Agglomerative_Clustering , KMeans, MeanShiftSegmentation, RegionGrowing
-from src.Thresholding import *
+from src.Thresholding import Thresholding
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -24,12 +26,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("Image Processing ToolBox")
         self.setWindowIcon(QIcon("icons/image-layer-svgrepo-com.png"))
         self.load_ui_elements()
+        self.init_sliders()
+        self.update_label_text()
         self.ui.clusters_comboBox.currentIndexChanged.connect(self.handle_clusters_combobox)
         self.ui.applyThreshold.clicked.connect(self.apply_thresholding)
         self.ui.applyCluster.clicked.connect(self.apply_clustering)
         self.ui.localRadio.setChecked(True)
         self.ui.localRadio.toggled.connect(self.radioToggled)
         self.ui.globalRadio.toggled.connect(self.radioToggled)
+        self.ui.windowSlider.valueChanged.connect(self.update_label_text)
+        self.ui.clustersSlider.valueChanged.connect(self.update_label_text)
+        # self.ui.clearButton.clicked.connect(lambda index=0: self.clear_image(index))
+        # self.ui.clearButton2.clicked.connect(lambda index=1: self.clear_image(index))
 
 
     def load_ui_elements(self):
@@ -60,7 +68,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.import_buttons = [self.ui.importButton, self.ui.importButton2]
 
         # Bind browse_image function to import buttons
-        self.bind_imbort_buttons(self.import_buttons, self.browse_image)
+        self.bind_import_buttons(self.import_buttons, self.browse_image)
 
         # Initialize reset buttons
         self.reset_buttons = [self.ui.resetButton, self.ui.resetButton2]
@@ -71,11 +79,11 @@ class MainWindow(QtWidgets.QMainWindow):
         # Initialize reset buttons
         self.clear_buttons = [self.ui.clearButton, self.ui.clearButton2]
 
-        # Bind reset_image function to reset buttons
-        self.bind_buttons(self.reset_buttons, self.clear)
+        # Call bind_buttons function
+        self.bind_buttons(self.clear_buttons, self.clear_image)
 
 
-    def bind_imbort_buttons(self, buttons, function):
+    def bind_import_buttons(self, buttons, function):
         """
         Bind a function to a list of buttons.
 
@@ -101,8 +109,11 @@ class MainWindow(QtWidgets.QMainWindow):
         Returns:
             None
         """
+        print(f"Binding buttons")
         for i, button in enumerate(buttons):
+            print(f"Binding button {i}")
             button.clicked.connect(lambda index=i: function(index))
+
 
     def create_viewport(self, parent, viewport_class, mouse_double_click_event_handler=None):
         """
@@ -141,6 +152,32 @@ class MainWindow(QtWidgets.QMainWindow):
         return self.create_viewport(parent, ImageViewport, mouse_double_click_event_handler)
     
 
+    def init_sliders(self):
+        self.ui.clustersSlider.setRange(2, 10)
+        self.ui.clustersSlider.setValue(2)
+
+        self.ui.windowSlider.setRange(3, 20)
+        self.ui.windowSlider.setValue(5)
+
+
+    def update_label_text(self):
+        """
+        Updates the label text based on the current value of the sliders.
+
+        This function is connected to the slider valueChanged signal,
+        and is called whenever the value of a slider changes.
+        It updates the text of the label next to the slider to display
+        the current value of the slider.
+        """
+
+        # For Threshold
+        window_size = self.ui.windowSlider.value()
+        self.ui.window_val.setText(f"{window_size}")
+
+        clusters_num = self.ui.clustersSlider.value()
+        self.ui.cluster_val.setText(f"{clusters_num}")
+
+
     def handle_clusters_combobox(self):
         current_index = self.ui.clusters_comboBox.currentIndex()
         if current_index == 0 or current_index ==3:
@@ -169,14 +206,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.window_val.hide()
             self.ui.line_5.hide()
 
-    def clear(self, index: int):
+    def clear_image(self, index):
         """
         Clear the specifed input and output ports.
 
         Args:
             index (int): The index of the port to clear.
         """
-
+        print(f"Clearing port {index}")
         self.input_ports[index].clear()
         self.out_ports[index].clear()
 
@@ -195,9 +232,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def apply_thresholding(self):
         if self.ui.localRadio.isChecked():
-            pass
+            self.apply_local_thresholding()
         else:
-            pass
+            self.apply_global_thresholding()
+
+
+    def apply_local_thresholding(self):
+        pass
+
+
+    def apply_global_thresholding(self):
+        pass
 
 
     def apply_clustering(self):

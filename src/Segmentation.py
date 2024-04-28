@@ -494,7 +494,7 @@ def kmeans_segment_(image, k=5, max_iters=100, save_path='segmented_image.png'):
 
 # if __name__ == '__main__':
 #     main()
-img = cv2.imread("images/shore.jpg")
-im = kmeans_segment_(img, k=2)
-plt.imshow(im)
-plt.show()
+# img = cv2.imread("images/shore.jpg")
+# im = kmeans_segment_(img, k=2)
+# plt.imshow(im)
+# plt.show()
