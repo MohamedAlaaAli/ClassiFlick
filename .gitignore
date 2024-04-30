@@ -22,3 +22,7 @@ rad.json
 TestResults.xml
 
 agglomerative.ipynb
+clustering_agglomerative.ipynb
+
+# ignore cahers
+__pycache__

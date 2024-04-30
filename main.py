@@ -272,9 +272,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def apply_clustering(self):
         selected_method = self.ui.clusters_comboBox.currentText()
         image = self.input_ports[1].original_img.copy()
+        print("processing")
         if selected_method == 'K-means':
-            #reshaped_image = image.reshape(-1, image.shape[-1])
-            #segmentaion = KMeans(K = self.ui.clustersSlider.value())
             output = kmeans_segment_(image.copy(), self.ui.clustersSlider.value())
         elif selected_method == 'Region-Growing':
             segmentaion = RegionGrowing(image = image, seeds= self.out_ports[1].get_drawing_points())
@@ -287,21 +286,31 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.out_ports[1].original_img = output
         self.out_ports[1].update_display()
+        print("Done")
 
 
-    def apply_agglomeration(self, n_clusters = 3):
+    def apply_agglomeration(self, n_clusters=3):
+        """
+        Apply the agglomerative clustering algorithm to the image.
+
+        Parameters:
+            n_clusters (int): The number of clusters to create. Default is 3.
+
+        Returns:
+            numpy.ndarray: A segmented image with the same shape as the input image.
+        """
         # Step 1: Read the image 
-        image = self.out_ports[1].original_img
+        image = cv2.imread(self.image_path)
 
         # Step 2: Convert color space from BGR to LUV
         image_luv = cv2.cvtColor(image, cv2.COLOR_BGR2LUV)
 
-        # Downsample the image to reduce memory usage 
-        downsample_factor = 0.4  
+        # Downsample the image to reduce memory usage (if necessary)
+        downsample_factor = 0.2  # Adjust this factor as needed
         image_luv = image_luv[::int(1/downsample_factor), ::int(1/downsample_factor), :]
 
         # Step 3: Reshape the image into a feature matrix
-        w, h, d = original_shape = tuple(image_luv.shape)
+        w, h, d =  tuple(image_luv.shape)
         assert d == 3
         image_array = np.reshape(image_luv, (w * h, d))
 
@@ -311,7 +320,15 @@ class MainWindow(QtWidgets.QMainWindow):
         # Step 5: Reshape the cluster labels to match the original image shape
         labels = clustering.labels_.reshape(w, h)
 
-        return labels
+        # Step 6: Calculate mean intensity of each cluster
+        segmented_image = np.zeros_like(image_luv, dtype=np.uint8)
+        unique_labels = np.unique(labels)
+        for label in unique_labels:
+            cluster_pixels = image_luv[labels == label]
+            mean_intensity = np.mean(cluster_pixels, axis=0)
+            segmented_image[labels == label] = mean_intensity.astype(np.uint8)
+
+        return segmented_image
 
 
     def show_error_message(self, message):
