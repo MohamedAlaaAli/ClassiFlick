@@ -277,7 +277,7 @@ class MainWindow(QtWidgets.QMainWindow):
             segmentaion = KMeans(K = self.ui.clustersSlider.value())
             output = segmentaion.predict(X = reshaped_image.copy()).reshape(image.shape[:2])
         elif selected_method == 'Region-Growing':
-            segmentaion = RegionGrowing(image = image, seeds= [(100, 100), (200, 200)])
+            segmentaion = RegionGrowing(image = image, seeds= self.out_ports[1].get_drawing_points())
             output = segmentaion.region_growing()
         elif selected_method == 'Mean-Shift':
             segmentaion = MeanShiftSegmentation(image = image)
