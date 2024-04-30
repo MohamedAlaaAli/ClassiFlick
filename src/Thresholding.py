@@ -197,15 +197,15 @@ class Thresholding:
         for idx, img_slice in enumerate(imgs_slices):
             _, thresholded_image = self.apply_otsu_on_region(img_slice)
             imgs_slices[idx] = thresholded_image
-        
-        imgs_slices = np.asarray(imgs_slices)
+            
+        final_image = np.vstack(imgs_slices)
 
-        return imgs_slices.reshape(self.image.shape)
+        return final_image
 
         
         
     def spectral_threshold_global(self):
-        gray_image = cv2.cvtColor(self.image.copy(), cv2.COLOR_BGR2GRAY)
+        gray_image = self.image
 
         hist = np.zeros(256)
         for i in range(gray_image.shape[0]):
@@ -226,7 +226,7 @@ class Thresholding:
         return global_image
     
     def spectral_threshold_local(self, block_size=20, bandwidth=5):
-        gray_image = cv2.cvtColor(self.image.copy(), cv2.COLOR_BGR2GRAY)
+        gray_image = self.image
 
         local_image = np.zeros_like(gray_image)
 

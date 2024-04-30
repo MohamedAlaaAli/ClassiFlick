@@ -322,9 +322,9 @@ class MeanShiftSegmentation:
 class RegionGrowing:
     def __init__(self, image, seeds):
         self.image = image
-        self.seeds = self.seeds
+        self.seeds = seeds
 
-    def region_growing(self, threshold, window_size):
+    def region_growing(self, threshold = 100, window_size = 20):
         """
         Region growing algorithm.
         Algorithm:

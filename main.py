@@ -238,15 +238,55 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def apply_local_thresholding(self):
-        pass
+        selected_method = self.ui.threshold_comboBox.currentText()
+        image = self.input_ports[0].original_img.copy()
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        thresholding = Thresholding(image=image)
+        if selected_method == 'Optimal':
+            output = thresholding.optimal_threshold_local(block_size=self.ui.windowSlider.value())
+        elif selected_method == 'Otsu':
+            output = thresholding.otsu_threshold_local()
+        else:
+            output = thresholding.spectral_threshold_local(block_size=self.ui.windowSlider.value())
+
+        self.out_ports[0].original_img = output
+        self.out_ports[0].update_display()
 
 
     def apply_global_thresholding(self):
-        pass
+        selected_method = self.ui.threshold_comboBox.currentText()
+        image = self.input_ports[0].original_img.copy()
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        thresholding = Thresholding(image=image)
+        if selected_method == 'Optimal':
+            _ , output = thresholding.optimal_threshold_global()
+        elif selected_method == 'Otsu':
+            output = thresholding.otsu_threshold_global()
+        else:
+            output = thresholding.spectral_threshold_global()
+
+        self.out_ports[0].original_img = output
+        self.out_ports[0].update_display()
 
 
     def apply_clustering(self):
-        pass
+        selected_method = self.ui.clusters_comboBox.currentText()
+        image = self.input_ports[1].original_img.copy()
+        if selected_method == 'K-means':
+            reshaped_image = image.reshape(-1, image.shape[-1])
+            segmentaion = KMeans(K = self.ui.clustersSlider.value())
+            output = segmentaion.predict(X = reshaped_image.copy()).reshape(image.shape[:2])
+        elif selected_method == 'Region-Growing':
+            segmentaion = RegionGrowing(image = image, seeds= [(100, 100), (200, 200)])
+            output = segmentaion.region_growing()
+        elif selected_method == 'Mean-Shift':
+            segmentaion = MeanShiftSegmentation(image = image)
+            output = segmentaion.segment_image()
+        else:
+            output = self.apply_agglomeration(n_clusters = self.ui.clustersSlider.value())
+
+        self.out_ports[1].original_img = output
+        self.out_ports[1].update_display()
 
 
     def apply_agglomeration(self, n_clusters = 3):
