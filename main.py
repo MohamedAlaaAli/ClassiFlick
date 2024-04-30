@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from src.imageViewPort import ImageViewport
 from sklearn.cluster import AgglomerativeClustering
-from src.Segmentation import Agglomerative_Clustering , KMeans, MeanShiftSegmentation, RegionGrowing
+from src.Segmentation import Agglomerative_Clustering , KMeans, MeanShiftSegmentation, RegionGrowing, kmeans_segment_
 from src.Thresholding import Thresholding
 
 
@@ -273,9 +273,9 @@ class MainWindow(QtWidgets.QMainWindow):
         selected_method = self.ui.clusters_comboBox.currentText()
         image = self.input_ports[1].original_img.copy()
         if selected_method == 'K-means':
-            reshaped_image = image.reshape(-1, image.shape[-1])
-            segmentaion = KMeans(K = self.ui.clustersSlider.value())
-            output = segmentaion.predict(X = reshaped_image.copy()).reshape(image.shape[:2])
+            #reshaped_image = image.reshape(-1, image.shape[-1])
+            #segmentaion = KMeans(K = self.ui.clustersSlider.value())
+            output = kmeans_segment_(image.copy(), self.ui.clustersSlider.value())
         elif selected_method == 'Region-Growing':
             segmentaion = RegionGrowing(image = image, seeds= self.out_ports[1].get_drawing_points())
             output = segmentaion.region_growing()
