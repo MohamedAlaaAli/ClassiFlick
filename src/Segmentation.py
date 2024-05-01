@@ -324,7 +324,7 @@ class RegionGrowing:
         self.image = image
         self.seeds = seeds
 
-    def region_growing(self, threshold = 100, window_size = 20):
+    def region_growing(self, threshold = 20, window_size = 3):
         """
         Region growing algorithm.
         Algorithm:
