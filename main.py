@@ -36,8 +36,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.globalRadio.toggled.connect(self.radioToggled)
         self.ui.windowSlider.valueChanged.connect(self.update_label_text)
         self.ui.clustersSlider.valueChanged.connect(self.update_label_text)
-        # self.ui.clearButton.clicked.connect(lambda index=0: self.clear_image(index))
-        # self.ui.clearButton2.clicked.connect(lambda index=1: self.clear_image(index))
 
 
     def load_ui_elements(self):
@@ -272,7 +270,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def apply_clustering(self):
         selected_method = self.ui.clusters_comboBox.currentText()
         image = self.input_ports[1].original_img.copy()
-        print("processing")
+        print("processing...")
         if selected_method == 'K-means':
             output = kmeans_segment_(image.copy(), self.ui.clustersSlider.value())
         elif selected_method == 'Region-Growing':
@@ -283,6 +281,8 @@ class MainWindow(QtWidgets.QMainWindow):
             output = segmentaion.segment_image()
         else:
             output = self.apply_agglomeration(n_clusters = self.ui.clustersSlider.value())
+            import time
+            time.sleep(10)
 
         self.out_ports[1].original_img = output
         self.out_ports[1].update_display()
