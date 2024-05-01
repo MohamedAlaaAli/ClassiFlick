@@ -3,6 +3,7 @@ from PyQt6.QtGui import QPainter, QImage, QColor, QPen
 from PyQt6.QtCore import Qt, QPoint
 import cv2
 import logging
+import numpy as np
 
 class ImageViewport(QWidget):
     def __init__(self, parent=None):
@@ -65,8 +66,9 @@ class ImageViewport(QWidget):
         """
         super().paintEvent(event)
 
-        if self.original_img is not None:
+        if self.original_img is not None and len(self.original_img.shape) > 1:
             painter_img = QPainter(self)
+            self.original_img = self.original_img.astype(np.uint8)  # Convert image to uint8
             height, width = self.original_img.shape[:2]  # Get height and width
 
             # Check if the image is grayscale or RGB
@@ -80,7 +82,7 @@ class ImageViewport(QWidget):
             aspect_ratio = width / height
             target_width = min(self.width(), int(self.height() * aspect_ratio))
             target_height = min(self.height(), int(self.width() / aspect_ratio))
-            self.resized_img = cv2.resize(self.original_img, (target_width, target_height))
+            self.resized_img = cv2.resize(self.original_img, (target_width, target_height), interpolation=cv2.INTER_NEAREST)
 
             # Calculate the position to center the image
             x_offset = (self.width() - target_width) // 2
